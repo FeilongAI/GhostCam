@@ -24,19 +24,24 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        
+        try {
+            setContentView(R.layout.activity_login);
 
-        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        usernameEdit = findViewById(R.id.username);
-        passwordEdit = findViewById(R.id.password);
-        saveLoginCheckbox = findViewById(R.id.save_login_checkbox);
-        Button loginButton = findViewById(R.id.login_button);
+            usernameEdit = findViewById(R.id.username);
+            passwordEdit = findViewById(R.id.password);
+            saveLoginCheckbox = findViewById(R.id.save_login_checkbox);
+            Button loginButton = findViewById(R.id.login_button);
 
-        // 加载保存的登录信息
-        loadSavedLogin();
+            loadSavedLogin();
 
-        loginButton.setOnClickListener(v -> attemptLogin());
+            loginButton.setOnClickListener(v -> attemptLogin());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void loadSavedLogin() {

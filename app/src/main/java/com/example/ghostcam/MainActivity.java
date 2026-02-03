@@ -56,15 +56,25 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        
+        try {
+            setContentView(R.layout.activity_main);
 
-        configPrefs = getSharedPreferences(CONFIG_PREFS, MODE_WORLD_READABLE);
-        projectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+            try {
+                configPrefs = getSharedPreferences(CONFIG_PREFS, MODE_WORLD_READABLE);
+            } catch (SecurityException e) {
+                configPrefs = getSharedPreferences(CONFIG_PREFS, MODE_PRIVATE);
+            }
+            projectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
-        initViews();
-        loadSettings();
-        loadInstalledApps();
-        setupListeners();
+            initViews();
+            loadSettings();
+            loadInstalledApps();
+            setupListeners();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
 
