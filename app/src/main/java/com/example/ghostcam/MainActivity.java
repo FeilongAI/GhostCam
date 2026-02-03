@@ -113,20 +113,54 @@ public class MainActivity extends Activity {
 
     private void loadInstalledApps() {
         PackageManager pm = getPackageManager();
-        List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+        List<ApplicationInfo> apps = pm.getInstalledApplications(0);
         List<String> appNames = new ArrayList<>();
 
         for (ApplicationInfo app : apps) {
-            // 只显示有摄像头权限的应用
-            if ((app.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+            // 过滤掉系统核心应用，保留用户应用和可能使用摄像头的系统应用
+            boolean isUserApp = (app.flags & ApplicationInfo.FLAG_SYSTEM) == 0;
+            boolean isUpdatedSystemApp = (app.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
+            
+            // 检查是否有摄像头权限
+            boolean hasCameraPermission = false;
+            try {
+                String[] permissions = pm.getPackageInfo(app.packageName, 
+                    PackageManager.GET_PERMISSIONS).requestedPermissions;
+                if (permissions != null) {
+                    for (String perm : permissions) {
+                        if (perm.equals("android.permission.CAMERA")) {
+                            hasCameraPermission = true;
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+
+            if (isUserApp || isUpdatedSystemApp || hasCameraPermission) {
                 String appName = pm.getApplicationLabel(app).toString();
                 appNames.add(appName);
                 appPackageNames.add(app.packageName);
             }
         }
 
+        // 按名称排序
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < appNames.size(); i++) indices.add(i);
+        indices.sort((a, b) -> appNames.get(a).compareToIgnoreCase(appNames.get(b)));
+        
+        List<String> sortedNames = new ArrayList<>();
+        List<String> sortedPackages = new ArrayList<>();
+        for (int i : indices) {
+            sortedNames.add(appNames.get(i));
+            sortedPackages.add(appPackageNames.get(i));
+        }
+        appPackageNames.clear();
+        appPackageNames.addAll(sortedPackages);
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this, android.R.layout.simple_spinner_item, appNames);
+            this, android.R.layout.simple_spinner_item, sortedNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         appSpinner.setAdapter(adapter);
 
